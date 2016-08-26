@@ -257,10 +257,12 @@ func (g *GoGenerator) resolveType(typ *parser.Type) string {
 func (g *GoGenerator) formatField(field *parser.Field) string {
 	tags := ""
 	jsonTags := ""
-	if !field.Optional {
-		tags = ",required"
-	} else {
+	if field.Optional {
+		tags = ",optional"
 		jsonTags = ",omitempty"
+	}
+	if field.Required {
+		tags = ",required"
 	}
 	var opt typeOption
 	if field.Optional {
