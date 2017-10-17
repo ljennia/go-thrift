@@ -255,22 +255,39 @@ func (g *GoGenerator) resolveType(typ *parser.Type) string {
 }
 
 func (g *GoGenerator) formatField(field *parser.Field) string {
+
 	tags := ""
-	jsonTags := ""
-	if field.Optional {
-		tags = ",optional"
-		jsonTags = ",omitempty"
-	}
 	if field.Required {
 		tags = ",required"
 	}
+
 	var opt typeOption
 	if field.Optional {
 		opt |= toOptional
 	}
+
+	omitempty := ""
+	if field.Optional {
+		tags = ",optional"
+		omitempty = ",omitempty"
+	}
+
+	goTags := fmt.Sprintf(
+		"json:%q", field.Name+omitempty,
+	)
+
+	for _, anno := range field.Annotations {
+		if anno.Name == "go.tag" {
+			goTags = anno.Value
+		}
+	}
+
 	return fmt.Sprintf(
-		"%s %s `thrift:\"%d%s\" json:\"%s%s\"`",
-		camelCase(field.Name), g.formatType(g.pkg, g.thrift, field.Type, opt), field.ID, tags, field.Name, jsonTags)
+		"%s %s `thrift:\"%d%s\" %s`",
+		camelCase(field.Name),
+		g.formatType(g.pkg, g.thrift, field.Type, opt),
+		field.ID, tags, goTags,
+	)
 }
 
 func (g *GoGenerator) formatArguments(arguments []*parser.Field) string {
