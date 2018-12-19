@@ -541,7 +541,11 @@ func (g *GoGenerator) writeService(out io.Writer, svc *parser.Service) error {
 		}
 		if !isVoid {
 			if !g.Pointers && basicTypes[g.resolveType(method.ReturnType)] {
-				g.write(out, "\tres.Value = &val\n")
+				if g.resolveType(method.ReturnType) == "string" {
+					g.write(out, "\tif val != \"\"{\n\t\tres.Value = &val\n\t}\n")
+				} else {
+					g.write(out, "\tres.Value = &val\n")
+				}
 			} else {
 				g.write(out, "\tres.Value = val\n")
 			}
